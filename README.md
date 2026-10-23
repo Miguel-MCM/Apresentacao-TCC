@@ -1,37 +1,132 @@
-UnBeamer
-========
+Apresentação TCC — Aplicativo de acessibilidade com uso de eye-tracking
+======================================================================
 
-Implementação da classe *UnBeamer*, que define algumas facilidades para criar uma apresentação com [LaTeX](http://www.latex-project.org/) e [Beamer](http://www.ctan.org/pkg/beamer), e do tema *UnB*, que define a aparência da apresentação.
+Slides de apresentação do TCC (Engenharia de Computação — CIC/UnB), feitos
+com [Beamer](https://ctan.org/pkg/beamer) e a classe/tema
+[UnBeamer](https://github.com/gnramos/UnBeamer).
 
-A proposta é ter uma identidade unificada para apresentações cujo escopo seja relacionado a [Universidade de Brasília](http://www.unb.br), buscando um visual simples.
+Estrutura
+---------
 
-Instalação
-----------
+| Arquivo / pasta      | Conteúdo                                                        |
+|----------------------|-----------------------------------------------------------------|
+| `apresentacao.tex`   | Documento principal dos slides                                  |
+| `referencias.bib`    | Referências bibliográficas (biblatex + biber)                   |
+| `figuras/`           | Imagens e diagramas TikZ (`*.tex` compilam para `*.pdf`)        |
+| `UnBeamer.dtx`       | Fonte da classe `UnBeamer.cls` e do tema em `theme/`            |
+| `UnBMarca.pdf`       | Marca da UnB usada pelo tema                                    |
+| `handoutWithNotes.sty` | Pacote auxiliar usado pela classe                             |
+| `estrutura.md`       | Roteiro/estrutura planejada da apresentação                     |
 
-Para instalar, basta seguir os seguintes passos:
+Dependências
+------------
 
-- Obter o [arquivo ZIP](https://github.com/gnramos/UnBeamer/archive/master.zip).
+- Uma distribuição TeX Live com `pdflatex`
+- Pacotes LaTeX: `beamer`, `beamerposter`, `pgf`/`tikz`, `standalone`,
+  `babel` (português), `lmodern`, `csquotes`, `biblatex`, `etex`, `pgfpages`
+- [`biber`](https://ctan.org/pkg/biber) (backend do biblatex)
+- `latexmk` (opcional, automatiza as várias passadas)
 
-- Descompactar o arquivo para [diretório local](http://tug.org/tds/tds.html) (no caso do [MikTeX](http://miktex.org/), vejam [aqui](http://docs.miktex.org/manual/localadditions.html)).
+### Arch Linux / Manjaro
 
 ```bash
-unzip UnBeamer-master.zip -d ~/texmf/tex/latex
+sudo pacman -S --needed texlive-basic texlive-latex texlive-latexrecommended \
+    texlive-latexextra texlive-pictures texlive-fontsrecommended \
+    texlive-langportuguese texlive-bibtexextra texlive-binextra biber
 ```
 
-- Gerar a documentação e os arquivos da classe e tema.
+### Debian / Ubuntu / Mint
 
 ```bash
-cd ~/texmf/tex/latex
+sudo apt install texlive-latex-base texlive-latex-recommended \
+    texlive-latex-extra texlive-pictures texlive-fonts-recommended \
+    texlive-lang-portuguese texlive-bibtex-extra biber latexmk
+```
+
+### Fedora
+
+```bash
+sudo dnf install texlive-scheme-medium texlive-beamerposter \
+    texlive-babel-portuges texlive-biblatex texlive-csquotes \
+    texlive-standalone biber latexmk
+```
+
+### Qualquer distribuição (alternativa)
+
+Instale tudo de uma vez com o pacote completo (`texlive-full` no Debian/Ubuntu,
+`texlive-scheme-full` no Fedora, ou o grupo `texlive` no Arch), ou use o
+[instalador oficial do TeX Live](https://tug.org/texlive/quickinstall.html),
+que não precisa de root.
+
+Compilação
+----------
+
+### 1. Gerar o tema UnB (apenas uma vez)
+
+Os arquivos do tema (`theme/beamer*themeUnB.sty`) não são versionados e são
+gerados a partir do `UnBeamer.dtx`:
+
+```bash
 pdflatex UnBeamer.dtx
 ```
 
-- Embora desnecessário nas versões mais recentes do [TeX Live](https://www.tug.org/texlive/), 
-pode ser preciso atualizar os registros. 
+Isso também gera `UnBeamer.cls`, a documentação `UnBeamer.pdf` e os exemplos
+`ex_apresentacao.tex` e `ex_poster.tex`.
+
+### 2. Compilar os slides
+
+Os arquivos intermediários (`.aux`, `.log`, `.nav`, `.bcf`, `.bbl`, …) ficam
+na pasta `build/`, mantendo a raiz limpa.
+
+Com `latexmk` (o PDF fica na raiz):
 
 ```bash
-texhash ~/texmf
+latexmk -pdf -auxdir=build -outdir=. apresentacao.tex
 ```
 
-Aparentemente o [MikTeX](http://miktex.org/) no Windows não é tão esperto, mas a versão 2.9 quase consegue... No Windows XP (32 bits), a instalação pode ser feita da seguinte forma: após baixar o arquivo ZIP, existem [algumas opções](http://docs.miktex.org/manual/localadditions.html). Supondo o reuso da classe, descompacte-o _no seu diretório local_ e registre-o como _root_. Abra o arquivo ```UnBeamer.dtx``` no TeXWorks, e compile-o com a opção _pdflatex_ (gerando o PDF com instruções para a classe). O programa reclama da ausência de alguns pacotes, mas já se oferece para instalá-los (aceite!). Dois arquivos ```tex``` são gerados como exemplos de uso, copie-os para outro diretório (já que o MikTeX teria problemas para compilá-los de dentro do diretório local), por exemplo sua pasta de Downloads.
+Ou manualmente (nesse caso o PDF também vai para `build/`):
 
-Veja a documentação gerada (arquivo UnBeamer.pdf) para instruções e exemplos de uso.
+```bash
+mkdir -p build
+pdflatex -output-directory=build apresentacao.tex
+biber --input-directory=build --output-directory=build apresentacao
+pdflatex -output-directory=build apresentacao.tex
+pdflatex -output-directory=build apresentacao.tex
+```
+
+O resultado é `apresentacao.pdf` (ou `build/apresentacao.pdf` na compilação
+manual).
+
+### 3. (Opcional) Recompilar as figuras TikZ
+
+Os PDFs das figuras já estão no repositório. Para regerá-los após editar um
+diagrama:
+
+```bash
+cd figuras
+for f in fluxo modulos pipeline; do pdflatex "$f.tex"; done
+```
+
+### Limpeza
+
+```bash
+rm -rf build
+```
+
+Problemas comuns
+----------------
+
+- **`File 'beamerthemeUnB.sty' not found`** — o tema não foi gerado; rode o
+  passo 1.
+- **`File 'xxx.sty' not found`** — falta algum pacote LaTeX. Descubra qual
+  pacote da distribuição contém o arquivo (`pacman -F xxx.sty`,
+  `apt-file search xxx.sty` ou `dnf provides '*/xxx.sty'`) e instale-o.
+- **Bibliografia vazia ou citações como `[?]`** — o `biber` não foi executado
+  ou não está instalado. A versão do `biber` deve ser compatível com a do
+  `biblatex` (instale ambos pelo mesmo gerenciador de pacotes).
+
+Créditos
+--------
+
+Classe e tema [UnBeamer](https://github.com/gnramos/UnBeamer), de Guilherme
+N. Ramos, distribuídos sob a LPPL e/ou GPL.
