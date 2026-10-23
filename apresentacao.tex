@@ -1,0 +1,429 @@
+\makeatletter\def\input@path{{theme/}}\makeatother
+\documentclass{UnBeamer}
+
+\usepackage[brazilian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{csquotes}
+\graphicspath{{figuras/}}
+
+\usepackage[backend=biber, style=numeric]{biblatex}
+\addbibresource{referencias.bib}
+\setbeamertemplate{bibliography item}[text]
+\AtBeginBibliography{\footnotesize}
+
+% Caixa reservando espaço para figuras/capturas de tela ainda não incluídas.
+\newcommand{\placeholder}[2][.8\textwidth]{%
+     \fbox{\parbox[c][.4\textheight][c]{\dimexpr#1-2\fboxsep-2\fboxrule}{\centering\color{gray}#2}}%
+}
+
+
+\makeatletter
+\renewcommand{\unbeamerrightfooter}{%
+    \usebeamerfont{author in head/foot}%
+    \insertframenumber/\inserttotalframenumber\hspace*{\unbeamer@halfMarginWidth}%
+}
+\makeatother
+
+%% ------------ Identificação ------------ %%
+\title[Eye-tracking para Acessibilidade]{Aplicativo de acessibilidade com uso de eye-tracking}
+\author[Medeiros \& Rabelo]{%
+    Miguel C. de Medeiros \and Thiago C. R. Rabelo\\[1ex]
+    {\small Orientador: Prof. Dr. Edson Mintsu -- ENE/UnB}%
+}
+\institute[CIC/UnB]{%
+    Departamento de Ciência da Computação\\
+    Universidade de Brasília\\
+    Curso de Engenharia de Computação%
+}
+\date{}
+
+\begin{document}
+
+\frame{\titlepage}
+
+%% ============================================================ %%
+\section{Introdução}
+
+\subsection{Problemas Enfrentados}
+\begin{frame}
+    % BUSCAR UMA FONTE QUE CONFIRME TUDO ISSO
+    \framesubtitle{Esclerose Lateral Amiotrófica (ELA)}
+    \begin{itemize}
+        \item \textbf{O que é}
+        \begin{itemize}
+            \item Doença neurodegenerativa progressiva dos neurônios motores~\cite{ela}
+            \item Fraqueza e paralisia gradual dos músculos voluntários
+        \end{itemize}
+        \vfill
+        \item \textbf{Impacto na comunicação}
+        \begin{itemize}
+            \item A fala se deteriora até ser perdida
+            \item Mãos e braços também perdem movimento: escrever e digitar
+                  deixam de ser opção
+            \item A cognição costuma ser preservada: a pessoa continua tendo
+                  o que dizer
+        \end{itemize}
+        \vfill
+        \item \textbf{Movimento ocular preservado}
+        \begin{itemize}
+            \item Os músculos dos olhos costumam ser poupados até fases avançadas
+            \item O olhar se torna o principal canal de comunicação
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\subsection{Soluções Existentes}
+\begin{frame}
+    \small
+    \begin{columns}[T]
+        \column{.48\textwidth}
+            \begin{block}{Smartbox~\cite{smartbox}}
+                \begin{itemize}
+                    \item Câmera infravermelha Lumin-i acoplada ao tablet
+                    \item Tolera movimentos da cabeça e luz do sol
+                    \item Grid 3: símbolos, teclado com predição e voz
+                \end{itemize}
+            \end{block}
+            \centering
+            \placeholder{Solução existente}
+        \column{.48\textwidth}
+            \centering
+            \placeholder{Solução existente}
+            \begin{block}{Tobii Dynavox~\cite{tobii}}
+                \begin{itemize}
+                    \item Sensor infravermelho embutido (reflexo na córnea e pupila)
+                    \item Tela traseira mostra o texto ao interlocutor
+                    \item TD Snap e Communicator 5 para comunicação
+                \end{itemize}
+            \end{block}
+    \end{columns}
+    % \centering
+    % \placeholder{Solução existente}
+\end{frame}
+
+\begin{frame}
+    \small
+    \begin{exampleblock}{O que oferecem}
+        \begin{itemize}
+            \item Rastreamento preciso, mesmo sob luz do sol
+                  e com movimentos da cabeça
+            \item Comunicação completa: símbolos, teclado com
+                  predição e voz
+            \item Controle do ambiente
+            \item Aparelho resistente, para cadeira de rodas ou cama
+        \end{itemize}
+    \end{exampleblock}
+    \begin{alertblock}{Mas a que custo?}
+        \begin{itemize}
+            \item Exigem câmera infravermelha e tablet dedicados
+            \item Grid Pad 13 com Lumin-i: US\$~16.485~\cite{smartboxprecos}
+            \item TD I-13: US\$~15.565~\cite{tobiipreco}
+            \item Fora do alcance da maioria das famílias, ainda
+                  sem impostos de importação
+        \end{itemize}
+    \end{alertblock}
+\end{frame}
+
+\subsection{Nosso Objetivo}
+\begin{frame}
+    \centering
+    \placeholder{Tablet comum}
+    \begin{exampleblock}{Objetivo}
+        Sistema de rastreamento ocular com sistema de teclado com predição e voz que possa ser utilizado em aparelhos tablet comuns.
+    \end{exampleblock}
+\end{frame}
+
+%% ============================================================ %%
+\section{Tecnologias Utilizadas}
+
+\subsection{Eye-tracking}
+\subsubsection{Abordagem}
+\begin{frame}
+    \centering
+    \includegraphics[width=\textwidth, height=.8\textheight, keepaspectratio]{pipeline}
+\end{frame}
+
+\subsubsection{Rosto e Olhos: ML Kit Face Mesh}
+\begin{frame}
+    \small
+    \begin{columns}[T]
+        \column{.48\textwidth}
+            {\normalsize\textbf{ML Kit Face Mesh~\cite{mlkit}}}
+                \begin{itemize}
+                    \item SDK de aprendizado de máquina do Google para celulares,
+                          com inferência no próprio aparelho
+                    \item Face Mesh: 468 pontos 3D do rosto em tempo real
+                \end{itemize}
+        \column{.48\textwidth}
+            \centering
+            \placeholder[\textwidth]{Rosto com a malha do Face Mesh e os cantos dos olhos destacados}
+    \end{columns}
+    \begin{exampleblock}{No sistema}
+            \begin{itemize}
+                \item Localiza o rosto e os cantos de cada olho
+                \item Os cantos definem o recorte do olho e a referência do vetor pupila--canto
+                \item Não marca a pupila: daí o segundo modelo
+            \end{itemize}
+    \end{exampleblock}
+\end{frame}
+
+\subsubsection{Pupila: YOLO}
+\begin{frame}
+    \small
+    \setbeamerfont{block title}{size=\small}
+    \begin{block}{YOLO26n~\cite{yolo,yolo26}}
+        Detector de objetos que prevê as caixas numa única passada da rede. \\
+        Versão nano da Ultralytics, voltada a dispositivos sem GPU.
+    \end{block}
+    \begin{columns}[T]
+        \column{.48\textwidth}
+            {\textbf{MPIIGaze~\cite{mpiigaze}}}
+            \begin{itemize}
+                \item 213.659 imagens de 15 participantes, capturadas pela
+                      webcam no uso diário do notebook
+                \item 10.654 imagens com o centro da pupila anotado à mão
+            \end{itemize}
+        \column{.48\textwidth}
+            {\textbf{Treinamento}}
+            \begin{itemize}
+                \item A partir dos pesos pré-treinados do YOLO26n
+                \item 21.308 recortes de olho de 128$\times$128~px,
+                      com a mesma geometria do app
+                \item Separação por participante: 11 no treino,
+                      2 na validação, 2 no teste
+            \end{itemize}
+    \end{columns}
+    \begin{exampleblock}{Teste em participantes nunca vistos} Pupila encontrada em 100\% dos 2.332 recortes, com erro mediano de 4,5\% da largura do olho (2,6~px num quadro de 1280$\times$720).
+    \end{exampleblock}
+\end{frame}
+
+\subsubsection{Regressão}
+% SERIA LEGAL PEGAR REFERÊNCIA
+\begin{frame}
+    % \scriptsize
+    % \setbeamerfont{block title}{size=\small}
+    \begin{block}{Entrada: vetor pupila--canto}
+        \[
+            \mathbf{v} = \frac{\mathbf{p} - \frac{1}{2}(\mathbf{c}_A + \mathbf{c}_B)}{\lVert \mathbf{c}_B - \mathbf{c}_A \rVert}
+        \]
+        $\mathbf{p}$: centro da pupila;\quad
+        $\mathbf{c}_A, \mathbf{c}_B$: cantos do olho.
+        Média dos dois olhos $\Rightarrow (v_x, v_y)$.
+        Invariante a escala e translação: compensa parte do movimento da cabeça.
+    \end{block}
+    \begin{block}{Modelo: polinômio de 2ª ordem}
+        \[
+            x_{\text{tela}} = a_0 + a_1 v_x + a_2 v_y + a_3 v_x^2 + a_4 v_y^2 + a_5 v_x v_y
+        \]
+        Mesma forma para $y_{\text{tela}}$: 6 coeficientes por eixo.
+        Saída em fração da tela, de 0 a 1.
+    \end{block}
+\end{frame}
+
+\subsubsection{Calibragem}
+\begin{frame}
+    \centering
+    \begin{exampleblock}{Ajuste na calibração}
+        \begin{itemize}
+            \item Grade de $5 \times 5$ alvos: mediana de $\mathbf{v}$ em cada alvo
+            \item Mínimos quadrados com regularização ridge, resolvido por
+                  eliminação de Gauss
+            \item Descarta até 2 alvos mal fixados, enquanto o erro mediano diminuir
+        \end{itemize}
+    \end{exampleblock}
+    % \placeholder{Captura da tela de calibragem}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.6\linewidth]{figuras/tela_calibragem.jpeg}
+        % \caption{Caption}
+        % \label{fig:placeholder}
+    \end{figure}
+\end{frame}
+
+\subsubsection{Filtro de Kalman}
+\begin{frame}
+    \scriptsize
+    \setbeamerfont{block title}{size=\small}
+    \begin{columns}[T]
+        \column{.44\textwidth}
+            \begin{alertblock}{Motivação}
+                \begin{itemize}
+                    \item O ponto da regressão treme a cada quadro: ruído na
+                          pupila e nos cantos do olho
+                    \item O dwell exige 1,5~s na mesma região: o tremor
+                          reinicia a contagem
+                \end{itemize}
+            \end{alertblock}
+            \begin{exampleblock}{No sistema}
+                \begin{itemize}
+                    \item Um filtro por eixo, $x$ e $y$ independentes
+                    \item Variância da medida $R = 0{,}075$ e da
+                          aceleração $\sigma_a^2 = 1$
+                    \item $\Delta t$ real entre quadros, limitado a 250~ms
+                    \item Reiniciado a cada nova calibração
+                \end{itemize}
+            \end{exampleblock}
+        \column{.52\textwidth}
+            \begin{block}{Modelo de velocidade constante~\cite{kalman}}
+                Estado $\mathbf{x} = (\text{posição}, \text{velocidade})$;
+                a aceleração entra como ruído.
+                \vspace{-1ex}
+                \begin{align*}
+                    \text{Predição:}\quad
+                    & \hat{\mathbf{x}}^- = F\hat{\mathbf{x}}, \qquad
+                      F = \begin{pmatrix} 1 & \Delta t \\ 0 & 1 \end{pmatrix} \\
+                    & P^- = F P F^\top + Q \\[1ex]
+                    \text{Correção:}\quad
+                    & K = \frac{P^- H^\top}{H P^- H^\top + R}, \qquad
+                      H = \begin{pmatrix} 1 & 0 \end{pmatrix} \\
+                    & \hat{\mathbf{x}} = \hat{\mathbf{x}}^- + K\,(z - H\hat{\mathbf{x}}^-) \\
+                    & P = (I - K H)\,P^-
+                \end{align*}
+                $z$: ponto medido pela regressão.
+                O ganho $K$ pondera a previsão e a medida conforme a
+                incerteza de cada uma.
+            \end{block}
+    \end{columns}
+\end{frame}
+
+
+\subsection{Autocomplete}
+\begin{frame}
+    % \begin{columns}[T]
+        % \column{.4\textwidth}
+            \begin{itemize}
+                \item Como as sugestões são geradas
+            \end{itemize}
+        % \column{.55\textwidth}
+            % \placeholder[\textwidth]{Tela do teclado com opções de autocomplete}
+            \begin{figure}
+                \centering
+                \includegraphics[width=\textwidth]{figuras/tela_teclado_zoom.jpeg}
+            \end{figure}
+    % \end{columns}
+\end{frame}
+
+\subsection{Geração de Áudio}
+\begin{frame}
+    \begin{itemize}
+        \item Kokoro
+        \item Sherpa
+    \end{itemize}
+\end{frame}
+
+%% ============================================================ %%
+\section{Desenvolvimento e Arquitetura}
+
+\subsection{Stack}
+\begin{frame}
+    \begin{itemize}
+        \item Flutter \cite{flutter_docs}
+        \item Android
+        \item Setup e IDE
+    \end{itemize}
+\end{frame}
+
+\subsection{Módulos}
+\begin{frame}
+    \centering
+     \includegraphics[width=\textwidth, height=.8\textheight, keepaspectratio]{modulos}
+\end{frame}
+
+\begin{frame}
+    \framesubtitle{Principais Interfaces}
+    \scriptsize
+        \begin{block}{GazeCommand}
+            \texttt{up, down, left, right, select}\\[2pt]
+            Contrato único de entrada: olhar, toque e botões
+            chegam todos em \texttt{\_handleCommand}.
+        \end{block}
+        \begin{block}{GazeTracker}
+            \texttt{Stream<GazeCommand> commands}\\
+            \texttt{Stream<GazeSample> samples}\\
+            \texttt{GazeMap? map}\\[2pt]
+            Emite um comando quando o dwell completa.
+        \end{block}
+\end{frame}
+
+\begin{frame}
+    \framesubtitle{Principais Interfaces}
+    \scriptsize
+        \begin{block}{SpeechSynthesizer}
+            \texttt{initialize()}, \texttt{speak(text)}, \texttt{stop()}\\
+            \texttt{ValueListenable<State> state}\\[2pt]
+            Isola a tela do runtime de síntese: Kokoro no app,
+            implementação falsa nos testes.
+        \end{block}
+        \begin{block}{WordPredictor}
+            \texttt{List<String> suggest(text, limit: 3)}\\[2pt]
+            Trigramas sobre um corpus de frases.
+        \end{block}
+\end{frame}
+
+%% ============================================================ %%
+\section{Resultados}
+
+\subsection{Telas}
+\begin{frame}
+    \centering
+    % \placeholder[.5\textwidth]{Tela 1}\hfill
+    \includegraphics[width=.49\textwidth]{figuras/tela_teclado.jpeg} \hfill
+    % \placeholder[.5\textwidth]{Tela 2}
+    \includegraphics[width=.49\textwidth]{figuras/tela_calibragem.jpeg}
+\end{frame}
+
+\subsection{Fluxo de Uso do App}
+\begin{frame}
+    \centering
+    \includegraphics[width=\textwidth, height=.8\textheight, keepaspectratio]{fluxo}
+\end{frame}
+
+\subsection{Métricas Obtidas com Pessoas}
+\begin{frame}
+    \begin{itemize}
+        \item Metodologia dos testes
+        \item Participantes
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \placeholder{Gráfico/tabela de métricas}
+\end{frame}
+
+%% ============================================================ %%
+\section{Conclusão}
+
+\begin{frame}
+    \begin{itemize}
+        \item Síntese dos resultados
+    \end{itemize}
+\end{frame}
+
+\subsection{Trabalhos Futuros}
+\begin{frame}
+    \begin{itemize}
+        \item Melhoria 1
+        \item Melhoria 2
+    \end{itemize}
+\end{frame}
+
+\section{Referências}
+
+\begin{frame}[allowframebreaks]
+    % \nocite{*}
+    \printbibliography[heading=none]
+\end{frame}
+
+\subsection{Agradecimentos e Perguntas}
+\begin{frame}
+    \centering\Huge
+    \begin{block}{}
+        \centering
+        Obrigado!\\[2ex]
+    \end{block}
+    \Large {\color{greenUnB} Perguntas?}
+\end{frame}
+
+\end{document}

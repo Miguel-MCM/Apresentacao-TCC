@@ -1,0 +1,37 @@
+\documentclass[11pt]{standalone}
+\input{preambulo}
+
+\begin{document}
+\begin{tikzpicture}[
+    font=\tiny,
+    passo/.style={draw, rounded corners=2pt, align=center, inner sep=2pt, minimum height=8mm},
+    preparo/.style={passo, text width=16mm, fill=blueUnB!12, draw=blueUnB},
+    uso/.style={passo, text width=20mm, fill=greenUnB!12, draw=greenUnB},
+    decisao/.style={draw, diamond, aspect=2, align=center, inner sep=1pt},
+    seta/.style={-{Stealth[length=1.5mm]}},
+]
+    \node[preparo] (abrir) at (-50mm, 0) {\textbf{Abrir o app}\\câmera e modelos};
+    \node[preparo] (calibrar) at (-26mm, 0) {\textbf{Calibração}\\fixar cada alvo};
+    \node[decisao] (calibrou) at (0, 0) {Calibrou?};
+
+    \node[uso, text width=26mm] (fixar) at (0, -17mm) {\textbf{Fixar o olhar numa região}\\(dwell de 1,5 s)};
+    \node[decisao] (comando) at (0, -33mm) {Comando};
+    \node[uso] (mover) at (-38mm, -33mm) {\textbf{Mover a seleção}\\teclado ou sugestões};
+    \node[uso] (ativar) at (38mm, -33mm) {\textbf{Ativar o item}\\tecla ou sugestão};
+    \node[uso] (falar) at (38mm, -50mm) {\textbf{Falar a mensagem}\\síntese com Kokoro};
+
+    \draw[seta] (abrir) -- (calibrar);
+    \draw[seta] (calibrar) -- (calibrou);
+    \draw[seta] (calibrou.north) -- ++(0, 4mm) -| node[pos=.25, above] {não} (calibrar.north);
+    \draw[seta] (calibrou) -- node[right] {sim} (fixar);
+
+    \draw[seta] (fixar) -- (comando);
+    \draw[seta] (comando) -- node[above] {seta} (mover);
+    \draw[seta] (comando) -- node[above] {selecionar} (ativar);
+    \draw[seta] (ativar) -- node[left] {tecla FALAR} (falar);
+
+    \draw[seta] (mover.north) |- (fixar.west);
+    \draw[seta] (ativar.north) |- (fixar.east);
+    \draw[seta] (falar.east) -- ++(5mm, 0) |- (fixar.east);
+\end{tikzpicture}
+\end{document}

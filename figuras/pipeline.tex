@@ -1,0 +1,36 @@
+\documentclass[11pt]{standalone}
+\input{preambulo}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=6mm and 5mm,
+    etapa/.style={
+        draw, rounded corners=2pt, align=center, font=\scriptsize,
+        text width=21mm, minimum height=11mm, inner sep=2pt,
+    },
+    deteccao/.style={etapa, fill=blueUnB!12, draw=blueUnB},
+    mapeamento/.style={etapa, fill=greenUnB!12, draw=greenUnB},
+    seta/.style={-{Stealth[length=2mm]}, thick},
+]
+    \node[deteccao] (camera) {\textbf{Câmera frontal}\\quadro NV21};
+    \node[deteccao, right=of camera] (mesh) {\textbf{Face Mesh}\\(ML Kit)\\cantos dos olhos};
+    \node[deteccao, right=of mesh] (recorte) {\textbf{Recorte alinhado}\\128$\times$128 por olho};
+    \node[deteccao, right=of recorte] (yolo) {\textbf{YOLO26n}\\(TFLite)\\centro da pupila};
+
+    \node[mapeamento, below=of yolo] (vetor) {\textbf{Vetor pupila--canto}\\média dos olhos};
+    \node[mapeamento, left=of vetor] (regressao) {\textbf{Regressão}\\polinomial\\2ª ordem};
+    \node[mapeamento, left=of regressao] (kalman) {\textbf{Filtro de Kalman}\\suavização};
+    \node[mapeamento, left=of kalman] (comando) {\textbf{Comando}\\região da tela\\+ dwell};
+
+    \node[etapa, dashed, below=of regressao] (calibracao) {\textbf{Calibração}\\grade de alvos};
+
+    \draw[seta] (camera) -- (mesh);
+    \draw[seta] (mesh) -- (recorte);
+    \draw[seta] (recorte) -- (yolo);
+    \draw[seta] (yolo) -- (vetor);
+    \draw[seta] (vetor) -- (regressao);
+    \draw[seta] (regressao) -- (kalman);
+    \draw[seta] (kalman) -- (comando);
+    \draw[seta, dashed] (calibracao) -- node[right, font=\tiny] {coeficientes} (regressao);
+\end{tikzpicture}
+\end{document}
