@@ -28,8 +28,13 @@
 	- YOLO, Google MLkit, regressão
 	- Filtro de Kalman
 - Tela de calibragem
-- Auto Complete
-	- Tela do teclado com as opções de autocomplete
+
+### Autocomplete
+- Abordagem: do texto às sugestões (tela do teclado com as opções)
+- Modelo de linguagem: trigramas com Stupid Backoff
+- Completar ou sugerir a próxima palavra (caso ambíguo da letra solta)
+- Tolerância a erros de digitação (distância de edição)
+- Avaliação offline: método e resultados
 
 ### Geração de Áudio
 - Kokoro e sherppa

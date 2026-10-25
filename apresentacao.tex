@@ -290,19 +290,157 @@
 
 
 \subsection{Autocomplete}
+\subsubsection{Abordagem}
 \begin{frame}
-    % \begin{columns}[T]
-        % \column{.4\textwidth}
+    \small
+    \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{figuras/tela_teclado_zoom.jpeg}
+    \end{figure}
+    \begin{columns}[T]
+        \column{.52\textwidth}
+            \begin{block}{Do texto às sugestões}
+                \begin{enumerate}
+                    \item Normaliza: minúsculas, sem acento
+                    \item Separa as palavras anteriores da
+                          palavra em digitação
+                    \item Pontua o vocabulário com trigramas
+                    \item Mostra as 3 melhores, com acento
+                \end{enumerate}
+            \end{block}
+        \column{.44\textwidth}
+            \begin{exampleblock}{Seleção pelo olhar}
+                Da primeira linha do teclado, olhar para cima
+                entra na barra de sugestões
+            \end{exampleblock}
+    \end{columns}
+\end{frame}
+
+\subsubsection{Modelo de Linguagem: n-gramas}
+\begin{frame}
+    \small
+    \begin{columns}[T]
+        \column{.48\textwidth}
+            \textbf{Corpus}
             \begin{itemize}
-                \item Como as sugestões são geradas
+                \item 565 frases típicas de comunicação alternativa,
+                      cerca de 765 palavras
+                \item Marcador de início de frase: ``eu'' no começo é
+                      um contexto diferente de ``eu'' no meio
             \end{itemize}
-        % \column{.55\textwidth}
-            % \placeholder[\textwidth]{Tela do teclado com opções de autocomplete}
-            \begin{figure}
-                \centering
-                \includegraphics[width=\textwidth]{figuras/tela_teclado_zoom.jpeg}
-            \end{figure}
-    % \end{columns}
+        \column{.48\textwidth}
+            \textbf{Trigramas}
+            \begin{itemize}
+                \item Conta cada palavra depois das 2 anteriores
+                \item Contexto nunca visto: recua para 1 palavra e
+                      depois para nenhuma
+            \end{itemize}
+    \end{columns}
+    \begin{block}{Stupid Backoff~\cite{brants}}
+        \[
+            S(w \mid h) =
+            \begin{cases}
+                \dfrac{c(h\,w)}{c(h)} & \text{se } c(h\,w) > 0 \\[1.5ex]
+                0{,}4 \cdot S(w \mid h') & \text{caso contrário}
+            \end{cases}
+        \]
+        $h$: palavras anteriores;\quad $h'$: $h$ sem a mais antiga;\quad
+        $c$: contagem no corpus.
+        Não é uma probabilidade, mas basta para ordenar as sugestões.
+    \end{block}
+\end{frame}
+
+\subsubsection{Completar ou Sugerir a Próxima Palavra}
+\begin{frame}
+    \small
+    \begin{columns}[T]
+        \column{.58\textwidth}
+            \begin{itemize}
+                \item \textbf{Termina em espaço:} sugere a próxima\\
+                      \texttt{EU QUERO\textvisiblespace} $\to$
+                      BEBER $\cdot$ COMER $\cdot$ IR
+                \vfill
+                \item \textbf{Palavra pela metade:} completa\\
+                      \texttt{EU QUERO B} $\to$
+                      BEBER $\cdot$ BOCA $\cdot$ BANHEIRO
+                \vfill
+                \item \textbf{Ambíguo:} \texttt{E} é a palavra ``e''
+                      ou o começo de ``estou''?
+            \end{itemize}
+        \column{.38\textwidth}
+            \centering
+            \placeholder[\textwidth]{Barra com \texttt{E} $\to$ ESTOU $\cdot$ EU $\cdot$ A}
+    \end{columns}
+    \begin{exampleblock}{As duas leituras competem}
+        Completar: $S(c \mid h)$
+        \qquad
+        Próxima palavra: $S(\text{e} \mid h) \cdot S(n \mid h\ \text{e})$\\[1ex]
+        \texttt{E} $\to$ ESTOU $\cdot$ EU (completam) $\cdot$ A (vem depois)
+    \end{exampleblock}
+\end{frame}
+
+\subsubsection{Tolerância a Erros de Digitação}
+\begin{frame}
+    \small
+    \begin{columns}[T]
+        \column{.50\textwidth}
+            \begin{alertblock}{Problema}
+                Uma seta a mais ou a menos troca a letra pela vizinha:
+                \texttt{BWB} em vez de \texttt{BEB}, e nenhuma palavra
+                começa assim
+            \end{alertblock}
+            \begin{block}{Distância de edição~\cite{levenshtein}}
+                \begin{itemize}
+                    \item Até o \emph{prefixo} mais próximo
+                    \item Vizinha, letra a mais ou a menos: 1;
+                          tecla distante: 2
+                    \item Até 1 erro, a partir de 3 letras
+                    \item Pontuação $\times\,0{,}01$: as exatas
+                          vêm primeiro
+                \end{itemize}
+            \end{block}
+        \column{.46\textwidth}
+            \centering
+            \placeholder[\textwidth]{Barra com \texttt{EU QUERO BWB} $\to$ BEBER}
+    \end{columns}
+\end{frame}
+
+\subsubsection{Avaliação Offline}
+\begin{frame}
+    \small
+    \begin{block}{Método}
+        \begin{itemize}
+            \item Digitador simulado escreve as frases do corpus pelo
+                  caminho mínimo de setas e aceita a sugestão quando
+                  ela custa menos comandos
+            \item Validação cruzada em 10 partes: o modelo nunca viu
+                  a frase testada
+            \item Mesmas métricas das sessões com pessoas~\cite{soukoreff}
+        \end{itemize}
+    \end{block}
+    \begin{columns}[T]
+        \column{.48\textwidth}
+            \centering
+            \textbf{Sem erros de digitação}\\[1ex]
+            \begin{tabular}{lr}
+                \hline
+                Comandos poupados   & 50,7\% \\
+                Palavras entre as 3 & 78,9\% \\
+                Fora do vocabulário & 16,5\% \\
+                \hline
+            \end{tabular}
+        \column{.48\textwidth}
+            \centering
+            \textbf{10\% de letras erradas}\textsuperscript{*}\\[1ex]
+            \begin{tabular}{lr}
+                \hline
+                Sem tolerância & 30,6\% \\
+                Com tolerância & 36,6\% \\
+                \hline
+            \end{tabular}
+    \end{columns}
+    \vspace{1ex}
+    \hfill{\scriptsize * comandos poupados; erro notado só no fim da palavra}
 \end{frame}
 
 \subsection{Geração de Áudio}
@@ -357,8 +495,10 @@
             implementação falsa nos testes.
         \end{block}
         \begin{block}{WordPredictor}
-            \texttt{List<String> suggest(text, limit: 3)}\\[2pt]
-            Trigramas sobre um corpus de frases.
+            \texttt{List<String> suggest(text, limit: 3)}\\
+            \texttt{String accept(text, suggestion)}\\[2pt]
+            Trigramas com Stupid Backoff e tolerância a erros;
+            \texttt{accept} insere a sugestão na mensagem.
         \end{block}
 \end{frame}
 
