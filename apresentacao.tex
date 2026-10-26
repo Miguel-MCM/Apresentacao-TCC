@@ -544,36 +544,72 @@
 \end{frame}
 
 \begin{frame}
-    \framesubtitle{Principais Interfaces}
-    \scriptsize
-        \begin{block}{GazeCommand}
-            \texttt{up, down, left, right, select}\\[2pt]
-            Contrato único de entrada: olhar, toque e botões
-            chegam todos em \texttt{\_handleCommand}.
-        \end{block}
-        \begin{block}{GazeTracker}
-            \texttt{Stream<GazeCommand> commands}\\
-            \texttt{Stream<GazeSample> samples}\\
-            \texttt{GazeMap? map}\\[2pt]
-            Emite um comando quando o dwell completa.
-        \end{block}
+    \framesubtitle{\texttt{widgets/}: componentes da interface}
+    \small
+    \begin{description}[\texttt{OnScreenKeyboard}]
+        \item[\texttt{OnScreenKeyboard}] Teclado com uma tecla destacada por
+            vez; as setas movem o destaque
+        \item[\texttt{MessageBar}] Mensagem em composição e sugestões de
+            palavras
+        \item[\texttt{EdgeControls}] Setas nas bordas da tela: máxima
+            distância entre os alvos
+        \item[\texttt{DirectionPad}] Setas em cruz: arranjo compacto
+        \item[\texttt{GazeButton}] Botão comum aos dois arranjos, para
+            comparar só a geometria
+        \item[\texttt{CameraView}] Prévia da câmera para o enquadramento;
+            entrega a câmera ao rastreador
+    \end{description}
 \end{frame}
 
 \begin{frame}
-    \framesubtitle{Principais Interfaces}
-    \scriptsize
-        \begin{block}{SpeechSynthesizer}
-            \texttt{initialize()}, \texttt{speak(text)}, \texttt{stop()}\\
-            \texttt{ValueListenable<State> state}\\[2pt]
-            Isola a tela do runtime de síntese: Kokoro no app,
-            implementação falsa nos testes.
-        \end{block}
-        \begin{block}{WordPredictor}
-            \texttt{List<String> suggest(text, limit: 3)}\\
-            \texttt{String accept(text, suggestion)}\\[2pt]
-            Trigramas com Stupid Backoff e tolerância a erros;
-            \texttt{accept} insere a sugestão na mensagem.
-        \end{block}
+    \framesubtitle{\texttt{models/}: dados e regras da interface}
+    \small
+    \begin{description}[\texttt{KeyboardLayout}]
+        \item[\texttt{GazeCommand}] Cima, baixo, esquerda, direita e
+            selecionar: contrato único de entrada para olhar, toque e botões
+        \item[\texttt{KeyboardLayout}] Teclado QWERTY com uma linha de ações:
+            espaço, apagar, limpar e falar
+        \item[\texttt{WordPredictor}] Sugere até 3 palavras por n-gramas com
+            Stupid Backoff, a partir de um corpus de frases de comunicação
+            alternativa
+        \item[\texttt{ControlStyle}] Escolhe entre setas nas bordas ou em
+            cruz, para medir qual funciona melhor
+    \end{description}
+\end{frame}
+
+\begin{frame}
+    \framesubtitle{\texttt{tts/}: síntese de voz}
+    \small
+    \begin{description}[\texttt{KokoroSynthesizer}]
+        \item[\texttt{SpeechSynthesizer}] Interface com \texttt{initialize},
+            \texttt{speak}, \texttt{stop} e o estado da fala; a tela depende
+            só dela
+        \item[\texttt{KokoroSynthesizer}] Implementação com Kokoro e
+            sherpa-onnx, numa isolate dedicada; uma fala por vez
+    \end{description}
+    \vfill
+    \begin{block}{Por que uma interface}
+        Nos testes, uma implementação falsa substitui o Kokoro, sem modelo
+        nem plugins nativos.
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    \framesubtitle{\texttt{gaze/}: rastreamento do olhar}
+    \small
+    \begin{description}[\texttt{PupilDetector}]
+        \item[\texttt{GazeTracker}] Conduz o pipeline a cada quadro e emite
+            o comando quando o dwell completa
+        \item[\texttt{PupilDetector}] Roda o YOLO26n em TFLite e devolve o
+            centro da pupila
+        \item[\texttt{CropTransform}] Geometria do recorte do olho, idêntica
+            à do treino
+        \item[\texttt{Nv21Frame}] Recorta o olho direto do buffer da câmera,
+            sem converter o quadro inteiro
+        \item[\texttt{GazeMap}] Regressão do vetor pupila--canto para o
+            ponto na tela
+        \item[\texttt{GazeKalman}] Suaviza o ponto antes de virar comando
+    \end{description}
 \end{frame}
 
 %% ============================================================ %%
