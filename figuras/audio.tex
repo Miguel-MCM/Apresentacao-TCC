@@ -1,0 +1,32 @@
+\documentclass[11pt]{standalone}
+\input{preambulo}
+\usetikzlibrary{fit}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=6mm and 5mm,
+    etapa/.style={
+        draw, rounded corners=2pt, align=center, font=\scriptsize,
+        text width=19mm, minimum height=11mm, inner sep=2pt,
+    },
+    entrada/.style={etapa, fill=gray!10},
+    sintese/.style={etapa, fill=blueUnB!12, draw=blueUnB},
+    saida/.style={etapa, fill=greenUnB!12, draw=greenUnB},
+    seta/.style={-{Stealth[length=2mm]}, thick},
+]
+    \node[entrada] (texto) {\textbf{Mensagem}\\tecla FALAR};
+    \node[sintese, right=of texto] (fonemas) {\textbf{Fonemas}\\espeak-ng\\(pt-br)};
+    \node[sintese, right=of fonemas] (kokoro) {\textbf{Kokoro}\\voz pf\_dora};
+    \node[saida, right=of kokoro] (wav) {\textbf{Áudio WAV}\\temporário};
+    \node[saida, right=of wav] (player) {\textbf{Reprodução}\\audioplayers};
+
+    \node[draw=blueUnB, dashed, rounded corners=3pt, inner sep=2.5mm,
+          fit=(fonemas) (kokoro),
+          label={[font=\tiny, text=blueUnB]above:sherpa-onnx, numa isolate dedicada}] {};
+
+    \draw[seta] (texto) -- (fonemas);
+    \draw[seta] (fonemas) -- (kokoro);
+    \draw[seta] (kokoro) -- (wav);
+    \draw[seta] (wav) -- (player);
+\end{tikzpicture}
+\end{document}

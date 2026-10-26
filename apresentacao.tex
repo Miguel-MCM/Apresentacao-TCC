@@ -445,10 +445,52 @@
 
 \subsection{Geração de Áudio}
 \begin{frame}
-    \begin{itemize}
-        \item Kokoro
-        \item Sherpa
-    \end{itemize}
+    \framesubtitle{Tecnologias}
+    \small
+    \setbeamerfont{block title}{size=\small}
+    \begin{columns}[T]
+        \column{.48\textwidth}
+            \begin{block}{Kokoro~\cite{kokoro}}
+                \begin{itemize}
+                    \item Modelo de síntese de fala de pesos abertos, com
+                          82 milhões de parâmetros
+                    \item Arquitetura derivada do StyleTTS~2~\cite{styletts2}:
+                          converte fonemas em áudio numa única passada da rede
+                    \item Versão 1.0: 8 idiomas e 54 vozes, incluindo
+                          português brasileiro
+                    \item Licença Apache 2.0
+                \end{itemize}
+            \end{block}
+        \column{.48\textwidth}
+            \begin{block}{sherpa-onnx~\cite{sherpa}}
+                \begin{itemize}
+                    \item Biblioteca do projeto Next-gen Kaldi para rodar
+                          modelos de fala sem internet
+                    \item Executa os modelos com o ONNX Runtime
+                    \item Suporta Android e oferece pacote para Flutter
+                    \item Licença Apache 2.0
+                \end{itemize}
+            \end{block}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \framesubtitle{No sistema}
+    \small
+    \setbeamerfont{block title}{size=\small}
+    \centering
+    \includegraphics[width=\textwidth]{audio}
+    \vfill
+    \begin{exampleblock}{Decisões}
+        \begin{itemize}
+            \item Totalmente offline: a frase não sai do aparelho
+            \item Isolate dedicada: a síntese não trava a interface
+                  nem o rastreador de olhar
+            \item Uma fala por vez: dwells repetidos não sobrepõem áudios
+            \item Modelo de \textasciitilde355~MB fora do Git, baixado por
+                  script e verificado por SHA-256
+        \end{itemize}
+    \end{exampleblock}
 \end{frame}
 
 %% ============================================================ %%
@@ -456,11 +498,43 @@
 
 \subsection{Stack}
 \begin{frame}
-    \begin{itemize}
-        \item Flutter \cite{flutter_docs}
-        \item Android
-        \item Setup e IDE
-    \end{itemize}
+    \scriptsize
+    \setbeamerfont{block title}{size=\small}
+    \begin{columns}[T]
+        \column{.48\textwidth}
+            \begin{block}{Por que Flutter~\cite{flutter}}
+                \begin{itemize}
+                    \item Plugins prontos para tudo que o sistema usa:
+                          câmera, ML Kit, TFLite e sherpa-onnx
+                    \item Quadros da câmera em tempo real, sem escrever
+                          código nativo
+                    \item Isolates: a síntese de voz roda sem travar a
+                          interface
+                    \item Hot reload e testes integrados aceleram os
+                          ajustes de interface e calibração
+                \end{itemize}
+            \end{block}
+        \column{.48\textwidth}
+            \begin{block}{Por que Android}
+                \begin{itemize}
+                    \item Tablets comuns custam bem menos que os aparelhos
+                          dedicados
+                    \item Câmera frontal e tela grande, sem hardware extra
+                    \item O Face Mesh do ML Kit está disponível no Android
+                    \item Instalação direta do APK, sem depender de loja
+                \end{itemize}
+            \end{block}
+    \end{columns}
+    \vspace{2ex}
+    \begin{exampleblock}{Setup e ferramentas}
+        \begin{itemize}
+            \item IDE: VS Code, com as extensões de Dart e Flutter
+            \item Depuração no tablet por USB; \texttt{flutter test} para
+                  geometria, calibração e rotação
+            \item Treino do detector de pupila à parte, em Python com
+                  PyTorch e Ultralytics
+        \end{itemize}
+    \end{exampleblock}
 \end{frame}
 
 \subsection{Módulos}
