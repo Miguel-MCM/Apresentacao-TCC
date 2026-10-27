@@ -6,40 +6,45 @@
     font=\tiny,
     caixa/.style={draw, rounded corners=2pt, align=center, inner sep=2pt},
     tela/.style={caixa, fill=blueUnB!25, draw=blueUnB, text width=26mm, minimum height=6mm},
-    pacote/.style={caixa, anchor=north, text width=24mm, minimum height=22mm},
-    externo/.style={caixa, dashed, anchor=north, text width=24mm, text=gray, draw=gray},
+    pacote/.style={caixa, anchor=north, text width=23mm, minimum height=22mm},
+    externo/.style={caixa, dashed, anchor=north, text width=23mm, text=gray, draw=gray},
     seta/.style={-{Stealth[length=1.5mm]}},
 ]
     \node[tela, fill=white] (app) at (0, 0) {\textbf{main.dart}\\ElaCommunicatorApp};
 
     \node[tela] (comunicador) at (0, -11mm) {\textbf{CommunicatorScreen}};
-    \node[tela] (calibracao) at (42mm, -11mm) {\textbf{CalibrationScreen}};
+    \node[tela] (calibracao) at (54mm, -11mm) {\textbf{CalibrationScreen}};
 
-    \node[pacote, fill=gray!10] (widgets) at (-42mm, -21mm) {%
+    \node[pacote, fill=gray!10] (widgets) at (-54mm, -21mm) {%
         \textbf{widgets/}\\[2pt]
         OnScreenKeyboard\\MessageBar\\EdgeControls\\DirectionPad\\GazeButton\\CameraView};
-    \node[pacote, fill=gray!10] (models) at (-14mm, -21mm) {%
+    \node[pacote, fill=gray!10] (models) at (-27mm, -21mm) {%
         \textbf{models/}\\[2pt]
         WordPredictor\\KeyboardLayout\\GazeCommand\\ControlStyle};
-    \node[pacote, fill=greenUnB!12, draw=greenUnB] (tts) at (14mm, -21mm) {%
+    \node[pacote, fill=gray!10] (metrics) at (0, -21mm) {%
+        \textbf{metrics/}\\[2pt]
+        TypingMetricsRecorder\\TypingMetrics\\TypingEvent\\SimulatedTypist};
+    \node[pacote, fill=greenUnB!12, draw=greenUnB] (tts) at (27mm, -21mm) {%
         \textbf{tts/}\\[2pt]
         \textit{SpeechSynthesizer}\\KokoroSynthesizer};
-    \node[pacote, fill=blueUnB!12, draw=blueUnB] (gaze) at (42mm, -21mm) {%
+    \node[pacote, fill=blueUnB!12, draw=blueUnB] (gaze) at (54mm, -21mm) {%
         \textbf{gaze/}\\[2pt]
         GazeTracker\\PupilDetector\\GazeMap\\GazeKalman\\CropTransform\\Nv21Frame};
 
-    \node[externo] (extWidgets) at (-42mm, -47mm) {camera};
-    \node[externo] (extModels) at (-14mm, -47mm) {assets/phrases (JSON)};
-    \node[externo] (extTts) at (14mm, -47mm) {sherpa-onnx\\audioplayers};
-    \node[externo] (extGaze) at (42mm, -47mm) {camera\\ML Kit Face Mesh\\tflite\_flutter};
+    \node[externo] (extWidgets) at (-54mm, -47mm) {camera};
+    \node[externo] (extModels) at (-27mm, -47mm) {assets/phrases (JSON)};
+    \node[externo] (extMetrics) at (0, -47mm) {path\_provider\\(sessões em JSON)};
+    \node[externo] (extTts) at (27mm, -47mm) {sherpa-onnx\\audioplayers};
+    \node[externo] (extGaze) at (54mm, -47mm) {camera\\ML Kit Face Mesh\\tflite\_flutter};
 
     \draw[seta] (app) -- (comunicador);
     \draw[seta] (comunicador) -- node[above] {abre} (calibracao);
     \draw[seta] (calibracao) -- (gaze);
-    \foreach \destino in {widgets, models, tts, gaze} {
+    \foreach \destino in {widgets, models, metrics, tts, gaze} {
         \draw[seta] (comunicador.south) -- (\destino.north);
     }
-    \foreach \origem/\destino in {widgets/extWidgets, models/extModels, tts/extTts, gaze/extGaze} {
+    \draw[seta] (metrics) -- (models);
+    \foreach \origem/\destino in {widgets/extWidgets, models/extModels, metrics/extMetrics, tts/extTts, gaze/extGaze} {
         \draw[seta, dashed, gray] (\origem) -- (\destino);
     }
 \end{tikzpicture}
